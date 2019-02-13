@@ -5,6 +5,7 @@ sys.path.insert(0, '../bomberman')
 # Import necessary stuff
 from entity import CharacterEntity
 from colorama import Fore, Back
+import random
 
 class TestCharacter(CharacterEntity):
     def look_for_empty_cell(self, wrld):
