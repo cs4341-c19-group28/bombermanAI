@@ -8,7 +8,6 @@ from entity import CharacterEntity
 from colorama import Fore, Back
 import random
 
-
 class TestCharacter(CharacterEntity):
     saved_bomb_loc = (None, None)
     fuse = -1

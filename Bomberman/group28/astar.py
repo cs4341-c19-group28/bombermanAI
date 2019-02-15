@@ -70,7 +70,7 @@ class TestCharacter(CharacterEntity):
 
     def astar(self, start, goal,world):
         frontier = PriorityQueue()
-        frontier.put(start, 0)
+        frontier.put(start)
         came_from = {}
         cost_so_far = {}
         came_from[start] = None
