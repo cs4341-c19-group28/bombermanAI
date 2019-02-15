@@ -8,12 +8,6 @@ from entity import CharacterEntity
 from colorama import Fore, Back
 import random
 
-
-# import Queue as queue
-#
-# pq=queue.PriorityQueue()
-
-
 class PriorityQueue():
     def __init__(self):
         self.queue = []
@@ -34,25 +28,13 @@ class PriorityQueue():
     # for inserting an element in the queue
     def put(self, data, priority):
         self.queue.append((priority, data))
-        # self.queue = self.queue[:index] + [newvalue] + self.queue[index+1:]
         self.queue.sort()
 
-        # else:
-        #     for index in range(0,self.size()):
-        #         currentP=self.queue[index]
-        #         print("VAL",currentP[0])
-        #         if(priority<currentP[0]):
-        #             self.queue.insert(index-1,(priority,data))
-        #         else:
-        #             continue
-
-    # for popping an element based on Priority
     def get(self):
         if not self.empty():
             return self.queue.pop(0)
         else:
             print("ERROR: QUEUE EMPTY")
-
 
 class TestCharacter(CharacterEntity):
     saved_bomb_loc = (None, None)
@@ -76,11 +58,11 @@ class TestCharacter(CharacterEntity):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
                         # Is this cell walkable?
-                        # if not wrld.wall_at(x + dx, y + dy):#old
                         if not wrld.explosion_at(x + dx, y + dy) and not self.will_explode(x + dx, y + dy):
                             cells.append((x + dx, y + dy))
                             # All done
         return cells
+
     def monseter_search(self, wrld, x, y,radius):
         # List of empty cells
         cells = []
@@ -91,8 +73,6 @@ class TestCharacter(CharacterEntity):
                 for dy in [-radius, 0, radius]:
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
-                        # Is this cell walkable?
-                        # if not wrld.wall_at(x + dx, y + dy):#old
                         if wrld.monsters_at(x + dx, y + dy):
                             return True
         return False
@@ -225,7 +205,7 @@ class TestCharacter(CharacterEntity):
         dx = tx - self.x
         dy = ty - self.y
 
-
+        # make sure dx dy are valid
         if (dx > 1):
             dx = 1
         if dy > 1:
@@ -234,19 +214,25 @@ class TestCharacter(CharacterEntity):
             dx = 1
         if dy < -1:
             dy = -1
+
+         #place a bomb if pathing through a wall
         print("next loc",self.x+dx,self.y+dy)
         if wrld.wall_at(self.x+dx, self.y+dy):
             self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
             print("bombtime",wrld.bomb_time)
 
-            # if self.fuse >=-1:
-            #     safe = self.look_for_empty_cell(wrld)
-            #     (dx, dy) = random.choice(safe)
-            #     if(self.monseter_search(wrld,dx,dy,3)):
-            #         dx=-dx
-            #         dy=-dy
+
+            '''move character randomly to save spaces if a bomb has been planted'''
+            if self.fuse >=-1:
+                safe = self.look_for_empty_cell(wrld)
+                (dx, dy) = random.choice(safe)
+
+
+
+
+
 
 
         # next_loc = path_element[0]
-        self.update_fuse()
-        self.move(dx, dy)
+        self.update_fuse()##runs the count down each turn
+        self.move(dx, dy)#execute our final decided on motion
