@@ -81,6 +81,21 @@ class TestCharacter(CharacterEntity):
                             cells.append((x + dx, y + dy))
                             # All done
         return cells
+    def monseter_search(self, wrld, x, y,radius):
+        # List of empty cells
+        cells = []
+        # Go through neighboring cells
+        for dx in [-radius, 0, radius]:
+            # Avoid out-of-bounds access
+            if ((x + dx >= 0) and (x + dx < wrld.width())):
+                for dy in [-radius, 0, radius]:
+                    # Avoid out-of-bounds access
+                    if ((y + dy >= 0) and (y + dy < wrld.height())):
+                        # Is this cell walkable?
+                        # if not wrld.wall_at(x + dx, y + dy):#old
+                        if wrld.monsters_at(x + dx, y + dy):
+                            return True
+        return False
 
     def astar(self, graph, start, goal):
         frontier = PriorityQueue()
@@ -97,10 +112,16 @@ class TestCharacter(CharacterEntity):
             for next in neighbors:
                 # new_cost = cost_so_far[current] + graph.cost(current, next)
                 if not graph.wall_at(next[0], next[1]):
-                    graph_cost = graph.bomb_time
+                    graph_cost = 1
                 elif graph.wall_at(next[0], next[1]):
-                    graph_cost = graph.bomb_time + 30
+                    graph_cost = graph.bomb_time + 20
+                if self.monseter_search(graph,next[0],next[1],5):
+                    graph_cost=60
+                if self.monseter_search(graph,next[0],next[1],2):
+                    graph_cost=80
 
+
+#and not wrld.monsters_at(                            self.x + dx, self.y + dy) and not wrld.explosion_at(self.x + dx, self.y + dy
                 new_cost = current_cost + graph_cost
                 if next not in cost_so_far or new_cost < cost_so_far[next]:
                     cost_so_far[next] = new_cost
@@ -163,7 +184,10 @@ class TestCharacter(CharacterEntity):
         print("current loc", self.x, " ", self.y)
         print("path", path)
 
-        self.set_cell_color(2, 2, " ")
+        # for steps in path:
+        #     self.set_cell_color(steps[0],steps[1], " ")
+
+
         # for locations in path:
         #     loc =locations[0]
         #     self.set_cell_color(loc[0],loc[1]," ")
@@ -176,30 +200,32 @@ class TestCharacter(CharacterEntity):
         ok=True
         while ok:
             # Find where frontmost node came from
-            try:
-                came_from = path[step_list[0]]
+            # try:
+            came_from = path[step_list[0]]
 
 
 
                 # If that position is None (IE the first move), break out of the while loop
-                if came_from is None:
-                    break
-                else:
+            if came_from is None:
+                break
+            else:
                     step_list = [came_from] + step_list
-            except:
-                print("ERROR: A* camefrom list invalid")
-                (dx, dy) = random.choice(safe)
-                ok=False
+            # except:
+            #     print("ERROR: A* camefrom list invalid")
+            #     (dx, dy) = random.choice(safe)
+            #     ok=False
 
 
 
         # Get target x and y of next move
-        if ok:
-            tx, ty = step_list[1]
+        # if ok:
+        tx, ty = step_list[1]
 
-            # Compute deltas
-            dx = tx - self.x
-            dy = ty - self.y
+        # Compute deltas
+        dx = tx - self.x
+        dy = ty - self.y
+
+
         if (dx > 1):
             dx = 1
         if dy > 1:
@@ -213,9 +239,13 @@ class TestCharacter(CharacterEntity):
             self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
             print("bombtime",wrld.bomb_time)
 
-            if self.fuse >=-1:
-                safe = self.look_for_empty_cell(wrld)
-                (dx, dy) = random.choice(safe)
+            # if self.fuse >=-1:
+            #     safe = self.look_for_empty_cell(wrld)
+            #     (dx, dy) = random.choice(safe)
+            #     if(self.monseter_search(wrld,dx,dy,3)):
+            #         dx=-dx
+            #         dy=-dy
+
 
         # next_loc = path_element[0]
         self.update_fuse()
