@@ -7,6 +7,8 @@ sys.path.insert(0, '../bomberman')
 from entity import CharacterEntity
 from colorama import Fore, Back
 import random
+
+
 # import Queue as queue
 #
 # pq=queue.PriorityQueue()
@@ -21,19 +23,19 @@ class PriorityQueue():
 
     # for checking if the queue is empty
     def empty(self):
-        if self.size()!=0:
+        if self.size() != 0:
             return False
         else:
             return True
 
     def size(self):
         return len(self.queue)
+
     # for inserting an element in the queue
     def put(self, data, priority):
-        self.queue.append((priority,data))
+        self.queue.append((priority, data))
+        # self.queue = self.queue[:index] + [newvalue] + self.queue[index+1:]
         self.queue.sort()
-
-        print("current queue",self.queue)
 
         # else:
         #     for index in range(0,self.size()):
@@ -44,15 +46,12 @@ class PriorityQueue():
         #         else:
         #             continue
 
-
     # for popping an element based on Priority
     def get(self):
-        print("quque",self.queue)
         if not self.empty():
             return self.queue.pop(0)
         else:
             print("ERROR: QUEUE EMPTY")
-
 
 
 class TestCharacter(CharacterEntity):
@@ -68,7 +67,6 @@ class TestCharacter(CharacterEntity):
 
     def get_neighbors(self, wrld, x, y):
         # List of empty cells
-        print("getting neighbors of ",x," ",y)
         cells = []
         # Go through neighboring cells
         for dx in [-1, 0, 1]:
@@ -78,10 +76,10 @@ class TestCharacter(CharacterEntity):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
                         # Is this cell walkable?
-                        if not wrld.wall_at(x + dx, y + dy):
-                            cells.append((dx, dy))
+                        # if not wrld.wall_at(x + dx, y + dy):#old
+                        if not wrld.explosion_at(x + dx, y + dy) and not self.will_explode(x + dx, y + dy):
+                            cells.append((x + dx, y + dy))
                             # All done
-        print("neighbors",cells)
         return cells
 
     def astar(self, graph, start, goal):
@@ -92,29 +90,30 @@ class TestCharacter(CharacterEntity):
         came_from[start] = None
         cost_so_far[start] = 0
         while not frontier.empty():
-            print("-----------------")
-            print("frontier", frontier)
             current_cost, current_loc = frontier.get()
             if current_loc == goal:
                 break
-            print("currentL", current_loc)
             neighbors = self.get_neighbors(graph, current_loc[0], current_loc[1])
             for next in neighbors:
                 # new_cost = cost_so_far[current] + graph.cost(current, next)
-                new_cost = current_cost + 1
+                if not graph.wall_at(next[0], next[1]):
+                    graph_cost = graph.bomb_time
+                elif graph.wall_at(next[0], next[1]):
+                    graph_cost = graph.bomb_time + 30
+
+                new_cost = current_cost + graph_cost
                 if next not in cost_so_far or new_cost < cost_so_far[next]:
-                    print("adding ", next,"to frontier")
                     cost_so_far[next] = new_cost
                     priority = new_cost + self.heuristic(goal, next)
                     frontier.put(next, priority)
                     came_from[next] = current_loc
-
-        print("A*Done")
         return came_from, cost_so_far
 
-    def smart_place_bomb(self, x, y):
+    def smart_place_bomb(self, x, y, fuse_time):
+        print("A",fuse_time,"b",self.fuse)
         if (self.fuse < 0):
-            self.fuse = 12
+            self.fuse = fuse_time + 2
+            print("F",self.fuse)
             self.place_bomb()
             self.saved_bomb_loc = (self.x, self.y)
             self.explosion_loc.clear()
@@ -151,24 +150,73 @@ class TestCharacter(CharacterEntity):
                             # All done
         return cells
 
-
-
     def do(self, wrld):
         safe = self.look_for_empty_cell(wrld)
         # Pick a move at random
 
+        # (dx, dy) = random.choice(safe)
+        path, cost = self.astar(wrld, (self.x, self.y), (wrld.exitcell))
+
+        # todo remove debug prints in final sumbission
         print("fuse", self.fuse)
         print("will explode", self.explosion_loc)
         print("current loc", self.x, " ", self.y)
+        print("path", path)
 
-        # (dx, dy) = random.choice(safe)
-        path,cost=self.astar(wrld, (self.x, self.y), (wrld.exitcell))
-        print("path",path)
-
-        self.set_cell_color(2,2," ")
+        self.set_cell_color(2, 2, " ")
         # for locations in path:
         #     loc =locations[0]
         #     self.set_cell_color(loc[0],loc[1]," ")
-        #self.smart_place_bomb(self.x, self.y)
+        # self.smart_place_bomb(self.x, self.y)
+
+        # Iterate back to form a path
+        step_list = [wrld.exitcell]
+
+        # Go until we find None as our "came from"
+        ok=True
+        while ok:
+            # Find where frontmost node came from
+            try:
+                came_from = path[step_list[0]]
+
+
+
+                # If that position is None (IE the first move), break out of the while loop
+                if came_from is None:
+                    break
+                else:
+                    step_list = [came_from] + step_list
+            except:
+                print("ERROR: A* camefrom list invalid")
+                (dx, dy) = random.choice(safe)
+                ok=False
+
+
+
+        # Get target x and y of next move
+        if ok:
+            tx, ty = step_list[1]
+
+            # Compute deltas
+            dx = tx - self.x
+            dy = ty - self.y
+        if (dx > 1):
+            dx = 1
+        if dy > 1:
+            dy = 1
+        if dx < -1:
+            dx = 1
+        if dy < -1:
+            dy = -1
+        print("next loc",self.x+dx,self.y+dy)
+        if wrld.wall_at(self.x+dx, self.y+dy):
+            self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
+            print("bombtime",wrld.bomb_time)
+
+            if self.fuse >=-1:
+                safe = self.look_for_empty_cell(wrld)
+                (dx, dy) = random.choice(safe)
+
+        # next_loc = path_element[0]
         self.update_fuse()
-        #self.move(1, 1)
+        self.move(dx, dy)
