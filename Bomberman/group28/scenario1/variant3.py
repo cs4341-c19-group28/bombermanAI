@@ -11,7 +11,7 @@ from monsters.selfpreserving_monster import SelfPreservingMonster
 # TODO This is your code!
 sys.path.insert(1, '../groupNN')
 #from testcharacter import TestCharacter
-from testcharacter_astar import TestCharacter
+from testcharacter_astar3 import TestCharacter
 
 
 # Create the game

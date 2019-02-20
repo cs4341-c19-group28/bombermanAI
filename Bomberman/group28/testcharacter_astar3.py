@@ -140,8 +140,8 @@ class TestCharacter(CharacterEntity):
 
     # Returns x, y coordinate that goes away from monster
     def avoid_mon(self, graph):
-        if self.monseter_search(graph, self.x, self.y, 2):
-            mon_at = monseter_search_2(graph, self.x, self.y, 2)
+        if self.monseter_search(graph, self.x, self.y, 3):
+            mon_at = self.monseter_search_2(graph, self.x, self.y, 3)
             relative_mon = (mon_at[0] - self.x, mon_at[1] - self.y)
             init_dest = (-1*relative_mon[0], -1*relative_mon[1])
             if init_dest[0] != 0:
@@ -213,22 +213,36 @@ class TestCharacter(CharacterEntity):
     def do(self, wrld):
         dx = 0
         dy = 0
-        if self.fuse > 0 and self.monseter_search(wrld, self.x, self.y, 2):  # behavior when the fuse is running
+
+        if self.fuse>0:
+            jc_ABOMB=True
+        else:
+            jc_ABOMB=False
+
+        if jc_ABOMB and self.monseter_search(wrld, self.x, self.y, 3):  # behavior when the fuse is running
+            print("--AVOIDING MONSTER")
             # safe = self.look_for_empty_cell(wrld)
             # (dx, dy) = random.choice(safe)
             target = self.avoid_mon(wrld)
             print("Target = ",target)
             path, cost = self.astar(wrld, (self.x, self.y), target)
             step_list = [target]
+        elif(jc_ABOMB):
+            print("--RANDOM")
+            if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
+                 safe = self.look_for_empty_cell(wrld)
+                 (dx, dy) = random.choice(safe)
         else:
+            print("--A*")
             path, cost = self.astar(wrld, (self.x, self.y), (wrld.exitcell))#do A*
             step_list = [wrld.exitcell]
 
         # TODO remove debug prints in final sumbission
+            print("path", path)
+
         print("fuse", self.fuse)
         print("will explode", self.explosion_loc)
         print("current loc", self.x, " ", self.y)
-        print("path", path)
         # TODO remove debug prints in final sumbission
 
 

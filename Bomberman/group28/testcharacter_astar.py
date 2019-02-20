@@ -58,7 +58,7 @@ class TestCharacter(CharacterEntity):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
                         # Is this cell walkable?
-                        if not wrld.explosion_at(x + dx, y + dy) and not self.will_explode(x + dx, y + dy):
+                        if not wrld.explosion_at(x + dx, y + dy):
                             cells.append((x + dx, y + dy))
                             # All done
         return cells
@@ -113,7 +113,7 @@ class TestCharacter(CharacterEntity):
     def smart_place_bomb(self, x, y, fuse_time):
         print("A",fuse_time,"b",self.fuse)
         if (self.fuse < 0):
-            self.fuse = fuse_time + 2
+            self.fuse = fuse_time + 1
             print("F",self.fuse)
             self.place_bomb()
             self.saved_bomb_loc = (self.x, self.y)
@@ -132,6 +132,8 @@ class TestCharacter(CharacterEntity):
     def update_fuse(self):
         if (self.fuse >= -1):
             self.fuse = self.fuse - 1
+        if(self.fuse==-2):
+            self.explosion_loc.clear()
 
     def look_for_empty_cell(self, wrld):
         # List of empty cells
@@ -177,23 +179,24 @@ class TestCharacter(CharacterEntity):
         step_list = [wrld.exitcell]
 
         # Go until we find None as our "came from"
-        ok=True
-        while ok:
-            # Find where frontmost node came from
-            # try:
-            came_from = path[step_list[0]]
+        try:
+            ok=True
+            while ok:
+                # Find where frontmost node came from
+                came_from = path[step_list[0]]
+                    # If that position is None (IE the first move), break out of the while loop
+                if came_from is None:
+                    break
+                else:
+                        step_list = [came_from] + step_list
+                # except:
+                #     print("ERROR: A* camefrom list invalid")
+                #     (dx, dy) = random.choice(safe)
+                #     ok=False
+        except:
+            path, cost = self.astar(wrld, (self.x, self.y), (wrld.exitcell))
+            print("FAILURE",path)
 
-
-
-                # If that position is None (IE the first move), break out of the while loop
-            if came_from is None:
-                break
-            else:
-                    step_list = [came_from] + step_list
-            # except:
-            #     print("ERROR: A* camefrom list invalid")
-            #     (dx, dy) = random.choice(safe)
-            #     ok=False
 
 
 
@@ -221,11 +224,9 @@ class TestCharacter(CharacterEntity):
             self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
             print("bombtime",wrld.bomb_time)
 
-
-            '''move character randomly to save spaces if a bomb has been planted'''
-            if self.fuse >=-1:
-                safe = self.look_for_empty_cell(wrld)
-                (dx, dy) = random.choice(safe)
+        if(self.fuse>0):
+            safe = self.look_for_empty_cell(wrld)
+            (dx, dy) = random.choice(safe)
 
 
 
@@ -235,4 +236,11 @@ class TestCharacter(CharacterEntity):
 
         # next_loc = path_element[0]
         self.update_fuse()##runs the count down each turn
+        if not self.will_explode(self.x+dx,self.y+dy):
+            print("moving normally")
+        else:
+            safe = self.look_for_empty_cell(wrld)
+            (dx, dy) = random.choice(safe)
+            print("Avoiding explosion")
+
         self.move(dx, dy)#execute our final decided on motion

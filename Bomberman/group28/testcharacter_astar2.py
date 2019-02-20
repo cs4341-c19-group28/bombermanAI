@@ -226,5 +226,7 @@ class TestCharacter(CharacterEntity):
             safe = self.look_for_empty_cell(wrld)
             (dx, dy) = random.choice(safe)
 
+
+
         self.update_fuse()  ##runs the count down each turn
         self.move(dx, dy)  # execute our final decided on motion
