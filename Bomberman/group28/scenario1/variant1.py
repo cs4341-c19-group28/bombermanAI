@@ -7,7 +7,7 @@ sys.path.insert(1, '..')
 from game import Game
 
 #from testcharacter_niko import TestCharacter
-from testcharacter_astar2 import TestCharacter
+from testcharacter_astar3 import TestCharacter
 
 # TODO This is your code!
 sys.path.insert(1, '../groupNN')
