@@ -120,7 +120,10 @@ class TestCharacter(CharacterEntity):
                 if not graph.wall_at(next[0], next[1]):
                     graph_cost = 1
                 elif graph.wall_at(next[0], next[1]):
-                    graph_cost = graph.bomb_time + 20
+                    if self.fuse > 0:
+                        graph_cost = graph.bomb_time + self.fuse + 30
+                    else:
+                        graph_cost = graph.bomb_time + 20
                 if self.monseter_search(graph, next[0], next[1], 5):
                     graph_cost = 60
                 if self.monseter_search(graph, next[0], next[1], 2):
