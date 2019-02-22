@@ -91,6 +91,15 @@ class Game:
         pygame.display.flip()
 
     def go(self, wait=0):
+        """ Main game loop. """
+
+        if wait is 0:
+            def step():
+                input("Press Enter to continue or CTRL-C to stop...")
+        else:
+            def step():
+                pygame.time.wait(abs(wait))
+
         colorama.init(autoreset=True)
         self.display_gui()
         self.draw()
