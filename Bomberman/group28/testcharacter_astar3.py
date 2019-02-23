@@ -181,7 +181,10 @@ class TestCharacter(CharacterEntity):
                 if(new_loc==(self.x,self.y)):
                     frontier.put(new_loc, 999 )
                 else:
-                    frontier.put(new_loc, -1*(self.distance(new_loc, monster_loc)) )
+                    threat_score=-1*self.distance(new_loc, monster_loc)
+                    goal_score=self.distance(new_loc,graph.exitcell)
+                    score=threat_score+goal_score
+                    frontier.put(new_loc, (score ))
             print("Frontier")
 
             current_cost, current_loc = frontier.get()
@@ -239,7 +242,7 @@ class TestCharacter(CharacterEntity):
     def do(self, wrld):
         dx = 0
         dy = 0
-        monster_search_rad = 2
+        monster_search_rad = 3
 
         if self.fuse > 0:
             jc_ABOMB = True
