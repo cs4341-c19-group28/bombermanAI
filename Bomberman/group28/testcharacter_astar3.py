@@ -72,28 +72,27 @@ class TestCharacter(CharacterEntity):
 
     # return true if a monster is present within a certain radius of a location
     def monseter_search(self, wrld, x, y, radius):
-        # List of empty cells
-        cells = []
         # Go through neighboring cells
-        for dx in [-radius, 0, radius]:
+        print("monster searching")
+        for dx in range(-radius, radius):
             # Avoid out-of-bounds access
             if ((x + dx >= 0) and (x + dx < wrld.width())):
-                for dy in [-radius, 0, radius]:
+                for dy in range(-radius, radius):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
+                        print("searching cell,",x+dx,y+dy)
                         if wrld.monsters_at(x + dx, y + dy):
+                            print("returining ture")
                             return True
         return False
 
     # Returns x, y coordinate of monster
     def monseter_search_2(self, wrld, x, y, radius):
-        # List of empty cells
-        cells = []
         # Go through neighboring cells
-        for dx in [-radius, 0, radius]:
+        for dx in range(-radius, radius):
             # Avoid out-of-bounds access
             if ((x + dx >= 0) and (x + dx < wrld.width())):
-                for dy in [-radius, 0, radius]:
+                for dy in range (-radius, radius):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
                         if wrld.monsters_at(x + dx, y + dy):
@@ -121,12 +120,12 @@ class TestCharacter(CharacterEntity):
                     graph_cost = 1
                 elif graph.wall_at(next[0], next[1]):
                     graph_cost = graph.bomb_time + 20
-                if self.monseter_search(graph, next[0], next[1], 5):
-                    graph_cost = 60
-                if self.monseter_search(graph, next[0], next[1], 2):
-                    graph_cost = 80
-                if self.will_explode(next[0], next[1]):
-                    graph_cost = 80
+                # if self.monseter_search(graph, next[0], next[1], 5):
+                #     graph_cost = 60
+                # if self.monseter_search(graph, next[0], next[1], 2):
+                #     graph_cost = 80
+                # if self.will_explode(next[0], next[1]):
+                #     graph_cost = 80
 
                 new_cost = current_cost + graph_cost  # sum the cost to get here
                 if next not in cost_so_far or new_cost < cost_so_far[
@@ -219,7 +218,7 @@ class TestCharacter(CharacterEntity):
         else:
             jc_ABOMB=False
 
-        if jc_ABOMB and self.monseter_search(wrld, self.x, self.y, 3):  # behavior when the fuse is running
+        if self.monseter_search(wrld, self.x, self.y, 3):  # behavior when the fuse is running
             print("--AVOIDING MONSTER")
             # safe = self.look_for_empty_cell(wrld)
             # (dx, dy) = random.choice(safe)
