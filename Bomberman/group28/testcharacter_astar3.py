@@ -38,17 +38,11 @@ class PriorityQueue():
     def get(self):
         if not self.empty():
             return self.queue.pop(0)
-
-        else:
-            print("ERROR: QUEUE EMPTY")
-
-    def get_last(self):
-        if not self.empty():
             print("QUEUE", self.queue)
-            return self.queue.pop(self.size)
 
         else:
             print("ERROR: QUEUE EMPTY")
+
 
 
 class TestCharacter(CharacterEntity):
@@ -184,8 +178,11 @@ class TestCharacter(CharacterEntity):
             # frontier.put((self.x, self.y), 0)
             for loc in safe:
                 new_loc = (self.x + loc[0], self.y + loc[1])
-
-                frontier.put(new_loc, -1*(self.distance(new_loc, monster_loc)) )
+                if(new_loc==(self.x,self.y)):
+                    frontier.put(new_loc, 999 )
+                else:
+                    frontier.put(new_loc, -1*(self.distance(new_loc, monster_loc)) )
+            print("Frontier")
 
             current_cost, current_loc = frontier.get()
 
