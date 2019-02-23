@@ -32,13 +32,13 @@ class PriorityQueue():
     # for inserting an element in the queue
     def put(self, data, priority):
         self.queue.append((priority, data))
-        #print("ADDING TO QUEUE", (priority, data))
+        # print("ADDING TO QUEUE", (priority, data))
         self.queue.sort()  # TODO put items in queue more inteligently if we have time
 
     def get(self):
         if not self.empty():
             return self.queue.pop(0)
-            #print("QUEUE", self.queue)
+            # print("QUEUE", self.queue)
 
         else:
             print("ERROR: QUEUE EMPTY")
@@ -48,6 +48,8 @@ class TestCharacter(CharacterEntity):
     saved_bomb_loc = (None, None)
     fuse = -1
     explosion_loc = []
+    last_loc = (0, 0)
+    repeat_count=0
 
     # return the '' dist '' between two tuples
     def distance(self, a, b):
@@ -55,7 +57,7 @@ class TestCharacter(CharacterEntity):
         (x2, y2) = b
         d = abs(x1 - x2) + abs(y1 - y2)
         # d=math.sqrt(math.pow(abs(x1 - x2),2) + math.pow(abs(y1 - y2),2))
-        #print("distance", a, b, d)
+        # print("distance", a, b, d)
         return d
 
     # returns all valid neighbors
@@ -78,16 +80,16 @@ class TestCharacter(CharacterEntity):
     # return true if a monster is present within a certain radius of a location
     def monseter_search(self, wrld, x, y, radius):
         # Go through neighboring cells
-        #print("monster searching")
+        # print("monster searching")
         for dx in range(-radius, radius):
             # Avoid out-of-bounds access
             if ((x + dx >= 0) and (x + dx < wrld.width())):
                 for dy in range(-radius, radius):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
-                        #print("searching cell,", x + dx, y + dy)
+                        # print("searching cell,", x + dx, y + dy)
                         if wrld.monsters_at(x + dx, y + dy):
-                            #print("returining ture")
+                            # print("returining ture")
                             return True
         return False
 
@@ -127,7 +129,7 @@ class TestCharacter(CharacterEntity):
                         if wrld.wall_at(x + dx, y + dy):
                             count += 1
                             # All done
-        print("BOX SCORE   ",x,y," SCORE",count)
+        print("BOX SCORE   ", x, y, " SCORE", count)
         return count
 
     # an implementation of A* takes in the world graph from bomberman, start(tuple), goal(tuple) and returns a dict of came from locations
@@ -289,9 +291,8 @@ class TestCharacter(CharacterEntity):
             # (dx, dy) = random.choice(safe)
             # if(self.monseter_search(wrld,self.x,self.y,2)):
             #     self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
-            if(self.monster_inrange(wrld)):
+            if (self.monster_inrange(wrld)):
                 self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
-
 
             target = self.avoid_mon2(wrld, monster_search_rad)
             print("Target = ", target)
@@ -361,6 +362,17 @@ class TestCharacter(CharacterEntity):
         #     if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
         #         safe = self.look_for_empty_cell(wrld)
         #         (dx, dy) = random.choice(safe)
+        if(self.repeat_count>5):
+            self.repeat_count=0
+
+
+
+        if self.last_loc == (self.x + dx, self.y + dy):
+            self.repeat_count += 1
+            safe = self.look_for_empty_cell(wrld)
+            (dx, dy) = random.choice(safe)
+
+        self.last_loc = (self.x, self.y)
 
         self.update_fuse()  ##runs the count down each turn
         self.move(dx, dy)  # execute our final decided on motion
