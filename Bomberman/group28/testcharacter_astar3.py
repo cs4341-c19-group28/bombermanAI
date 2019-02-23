@@ -276,7 +276,7 @@ class TestCharacter(CharacterEntity):
     def do(self, wrld):
         dx = 0
         dy = 0
-        monster_search_rad = 3
+        monster_search_rad = 4
 
         if self.fuse > 0:
             jc_ABOMB = True
