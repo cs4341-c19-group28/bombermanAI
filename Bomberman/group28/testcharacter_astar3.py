@@ -50,6 +50,7 @@ class TestCharacter(CharacterEntity):
     explosion_loc = []
     last_loc = (0, 0)
     repeat_count=0
+    super_repeat=0
 
     # return the '' dist '' between two tuples
     def distance(self, a, b):
@@ -207,11 +208,16 @@ class TestCharacter(CharacterEntity):
                 if (new_loc == (self.x, self.y)):
                     frontier.put(new_loc, 999)
                 else:
+
+                    #BEST: t=1.75,g=.75,b=.75
+                    kT=2#2
+                    kG=.5#1
+                    kB=1#.5
                     threat_score = -1 * self.distance(new_loc, monster_loc)
                     goal_score = self.distance(new_loc, graph.exitcell)
                     box_score = self.get_box_score(graph, new_loc)
-                    print("boxscore", box_score)
-                    score = threat_score * 1.75 + goal_score * .75 + box_score * .75
+                    print("scoresT G B", threat_score*kT,goal_score*kG,box_score*kB)
+                    score = threat_score * kT + goal_score *kG + box_score *kB
                     frontier.put(new_loc, (score))
             print("Frontier")
 
@@ -362,15 +368,23 @@ class TestCharacter(CharacterEntity):
         #     if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
         #         safe = self.look_for_empty_cell(wrld)
         #         (dx, dy) = random.choice(safe)
-        if(self.repeat_count>5):
+        if(self.repeat_count>6):
             self.repeat_count=0
+            self.super_repeat+=1
+            print("WARNING MOVING RAND")
+            # if self.super_repeat>3:
+            safe = self.look_for_empty_cell(wrld)
+            if(self.super_repeat>3):
+                self.super_repeat=0
+                self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
 
-
+            (dx, dy) = random.choice(safe)
 
         if self.last_loc == (self.x + dx, self.y + dy):
             self.repeat_count += 1
-            safe = self.look_for_empty_cell(wrld)
-            (dx, dy) = random.choice(safe)
+            #     self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
+            #     self.super_repeat=0
+
 
         self.last_loc = (self.x, self.y)
 
