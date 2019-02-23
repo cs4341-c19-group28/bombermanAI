@@ -32,17 +32,16 @@ class PriorityQueue():
     # for inserting an element in the queue
     def put(self, data, priority):
         self.queue.append((priority, data))
-        print("ADDING TO QUEUE", (priority, data))
+        #print("ADDING TO QUEUE", (priority, data))
         self.queue.sort()  # TODO put items in queue more inteligently if we have time
 
     def get(self):
         if not self.empty():
             return self.queue.pop(0)
-            print("QUEUE", self.queue)
+            #print("QUEUE", self.queue)
 
         else:
             print("ERROR: QUEUE EMPTY")
-
 
 
 class TestCharacter(CharacterEntity):
@@ -56,7 +55,7 @@ class TestCharacter(CharacterEntity):
         (x2, y2) = b
         d = abs(x1 - x2) + abs(y1 - y2)
         # d=math.sqrt(math.pow(abs(x1 - x2),2) + math.pow(abs(y1 - y2),2))
-        print("distance", a, b, d)
+        #print("distance", a, b, d)
         return d
 
     # returns all valid neighbors
@@ -79,16 +78,16 @@ class TestCharacter(CharacterEntity):
     # return true if a monster is present within a certain radius of a location
     def monseter_search(self, wrld, x, y, radius):
         # Go through neighboring cells
-        print("monster searching")
+        #print("monster searching")
         for dx in range(-radius, radius):
             # Avoid out-of-bounds access
             if ((x + dx >= 0) and (x + dx < wrld.width())):
                 for dy in range(-radius, radius):
                     # Avoid out-of-bounds access
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
-                        print("searching cell,", x + dx, y + dy)
+                        #print("searching cell,", x + dx, y + dy)
                         if wrld.monsters_at(x + dx, y + dy):
-                            print("returining ture")
+                            #print("returining ture")
                             return True
         return False
 
@@ -103,6 +102,33 @@ class TestCharacter(CharacterEntity):
                     if ((y + dy >= 0) and (y + dy < wrld.height())):
                         if wrld.monsters_at(x + dx, y + dy):
                             return (x + dx, y + dy)
+
+    # return a list of neighbors that are valid moves and don't kill you
+    def get_box_score(self, wrld, loc):
+        x = loc[0]
+        y = loc[1]
+        # Go through neighboring cells
+        count = 0
+
+        for dx in [-2, 0, 2]:
+            # Avoid out-of-bounds access
+            if not ((x + dx >= 0) or not (x + dx < wrld.width())):
+                print("workingAAA")
+                count += 1
+
+            if ((x + dx >= 0) and (x + dx < wrld.width())):
+                for dy in [-2, 0, 2]:
+                    # Avoid out-of-bounds access
+                    if not ((y + dy >= 0) or not (y + dy < wrld.height())):
+                        print("workingBBB")
+                        count += 1
+                    if ((y + dy >= 0) and (y + dy < wrld.height())):
+                        # Is this cell walkable?
+                        if wrld.wall_at(x + dx, y + dy):
+                            count += 1
+                            # All done
+        print("BOX SCORE   ",x,y," SCORE",count)
+        return count
 
     # an implementation of A* takes in the world graph from bomberman, start(tuple), goal(tuple) and returns a dict of came from locations
     def astar(self, graph, start, goal):
@@ -126,12 +152,10 @@ class TestCharacter(CharacterEntity):
                     graph_cost = 1
                 elif graph.wall_at(next[0], next[1]):
                     graph_cost = graph.bomb_time + 20
-                # if self.monseter_search(graph, next[0], next[1], 5):
-                #     graph_cost = 60
-                # if self.monseter_search(graph, next[0], next[1], 2):
-                #     graph_cost = 80
-                # if self.will_explode(next[0], next[1]):
-                #     graph_cost = 80
+                if self.monseter_search(graph, next[0], next[1], 1):
+                    graph_cost = 60
+                if self.will_explode(next[0], next[1]):
+                    graph_cost = 80
 
                 new_cost = current_cost + graph_cost  # sum the cost to get here
                 if next not in cost_so_far or new_cost < cost_so_far[
@@ -178,21 +202,31 @@ class TestCharacter(CharacterEntity):
             # frontier.put((self.x, self.y), 0)
             for loc in safe:
                 new_loc = (self.x + loc[0], self.y + loc[1])
-                if(new_loc==(self.x,self.y)):
-                    frontier.put(new_loc, 999 )
+                if (new_loc == (self.x, self.y)):
+                    frontier.put(new_loc, 999)
                 else:
-                    threat_score=-1*self.distance(new_loc, monster_loc)
-                    goal_score=self.distance(new_loc,graph.exitcell)
-                    score=threat_score+goal_score
-                    frontier.put(new_loc, (score ))
+                    threat_score = -1 * self.distance(new_loc, monster_loc)
+                    goal_score = self.distance(new_loc, graph.exitcell)
+                    box_score = self.get_box_score(graph, new_loc)
+                    print("boxscore", box_score)
+                    score = threat_score * 1.75 + goal_score * .75 + box_score * .75
+                    frontier.put(new_loc, (score))
             print("Frontier")
 
             current_cost, current_loc = frontier.get()
-
             return (current_loc)
         else:
             print("ERROR: No monster found")
-            return(self.x,self.y)
+            return (self.x, self.y)
+
+    def monster_inrange(self, wrld):
+        for i in range(-4, 5):
+            if wrld.monsters_at(self.x + i, self.y):
+                return True
+        for j in range(-4, 5):
+            if wrld.monsters_at(self.x, self.y + j):
+                return True
+        return False
 
     # function to place a bomb but also save the predicted explosion location
     def smart_place_bomb(self, x, y, fuse_time):
@@ -249,10 +283,16 @@ class TestCharacter(CharacterEntity):
         else:
             jc_ABOMB = False
 
-        if self.monseter_search(wrld, self.x, self.y, monster_search_rad):  # behavior when the fuse is running
+        if self.monseter_search(wrld, self.x, self.y, monster_search_rad):  # avoid monster behavior
             print("--AVOIDING MONSTER")
             # safe = self.look_for_empty_cell(wrld)
             # (dx, dy) = random.choice(safe)
+            # if(self.monseter_search(wrld,self.x,self.y,2)):
+            #     self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
+            if(self.monster_inrange(wrld)):
+                self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
+
+
             target = self.avoid_mon2(wrld, monster_search_rad)
             print("Target = ", target)
             path, cost = self.astar(wrld, (self.x, self.y), target)
@@ -285,7 +325,7 @@ class TestCharacter(CharacterEntity):
             try:
                 # Find where frontmost node came from
                 came_from = path[step_list[0]]
-                print("working",came_from)
+                print("working", came_from)
                 # If that position is None (IE the first move), break out of the while loop
                 if came_from is None:
                     break
