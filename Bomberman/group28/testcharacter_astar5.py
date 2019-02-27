@@ -325,15 +325,15 @@ class TestCharacter(CharacterEntity):
             path, cost = self.astar(wrld, (self.x, self.y), target)
             step_list = [target]
         elif (jc_ABOMB):
-            print("--RANDOM**NEW")
+            print("--RANDOM")
 
-            path, cost = self.astar(wrld, (self.x, self.y), (self.start_loc))  # do A*
-            step_list = [wrld.exitcell]
+            # path, cost = self.astar(wrld, (self.x, self.y), (self.start_loc))  # do A*
+            # step_list = [wrld.exitcell]
 
 
-            # if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
-            #     safe = self.look_for_empty_cell(wrld)
-            #     (dx, dy) = random.choice(safe)
+            if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
+                safe = self.look_for_empty_cell(wrld)
+                (dx, dy) = random.choice(safe)
         else:
             self.monster_search_rad=default_rad
             print("--A*")
