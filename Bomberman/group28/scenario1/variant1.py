@@ -6,11 +6,9 @@ sys.path.insert(1, '..')
 # Import necessary stuff
 from game import Game
 
-#from testcharacter_niko import TestCharacter
-from testcharacter_astar3 import TestCharacter
-
 # TODO This is your code!
 sys.path.insert(1, '../groupNN')
+from testcharacter import TestCharacter
 
 
 # Create the game
