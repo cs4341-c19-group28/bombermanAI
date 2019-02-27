@@ -294,7 +294,7 @@ class TestCharacter(CharacterEntity):
         print("")
         dx = 0
         dy = 0
-        default_rad=4
+        default_rad=6
         if not self.has_moved:
             self.has_moved=True
             self.start_loc=(self.x,self.y)
@@ -317,7 +317,7 @@ class TestCharacter(CharacterEntity):
             #     self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
             if (self.monster_inrange(wrld)):
                 self.smart_place_bomb(self.x, self.y, wrld.bomb_time)
-            elif(self.monseter_search(wrld,self.x,self.y,3)):
+            elif(self.monseter_search(wrld,self.x,self.y,5)):
                 self.smart_place_bomb(self.x,self.y,wrld.bomb_time)
 
             self.monster_search_rad+=1
@@ -328,13 +328,13 @@ class TestCharacter(CharacterEntity):
         elif (jc_ABOMB):
             print("--RANDOM")
 
-            # path, cost = self.astar(wrld, (self.x, self.y), (self.start_loc))  # do A*
-            # step_list = [wrld.exitcell]
+            path, cost = self.astar(wrld, (self.x, self.y), (self.x,(self.start_loc[1])))  # do A*
+            step_list = [wrld.exitcell]
 
 
-            if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
-                safe = self.look_for_empty_cell(wrld)
-                (dx, dy) = random.choice(safe)
+            # if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosion
+            #     safe = self.look_for_empty_cell(wrld)
+            #     (dx, dy) = random.choice(safe)
         else:
             self.monster_search_rad=default_rad
             print("--A*")
