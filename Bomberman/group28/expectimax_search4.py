@@ -239,21 +239,21 @@ class TestCharacter(CharacterEntity):
         if level >= self.search_level:
             return self.get_score(wrld, val)
         value = -inf
-        for loc in self.look_for_cell(brd):
-            newWorld = SensedWorld.from_world(action[0])
-            me = newWorld.me(self)
-            me.x = action[1][0]
-            me.y = action[1][1]
+        for loc in self.look_for_cell(wrld):
+            newWorld = SensedWorld.from_world(loc[0])
+            character = newWorld.me(self)
+            character.x = loc[1][0]
+            character.y = loc[1][1]
             value = max(value, self.expValue(newWorld, loc[1], level + 1))
         return value
         
     def fmax_value(self, wrld, direction, location, level):  # val is a tuple of direction
         if level >= self.search_level:
             print("quiting search")
-            return self.get_score(brd, (location[0] + direction[0], location[1] + direction[1]))
+            return self.get_score(wrld, (location[0] + direction[0], location[1] + direction[1]))
         value = -inf
         
-        c = next(iter(brd.me().values()))
+        c = next(iter(wrld.me().values()))
         
         for dx_c in [-1, 0, 1]:
             # Avoid out-of-bound indexing
