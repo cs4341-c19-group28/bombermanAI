@@ -178,9 +178,9 @@ class TestCharacter(CharacterEntity):
 
         if wrld.monsters_at(x,y):
             reward -=1000
-        if self.isEmpty(x,y,wrld)<5:
+        if self.isEmpty(x,y,wrld)<2:
             reward -=600
-        if self.isEmpty(x,y,wrld)<7:
+        if self.isEmpty(x,y,wrld)<5:
             reward -= 300
         if self.dis_to_bomb(x,y,wrld) > 0:
             reward -=(5/self.dis_to_bomb(x,y,wrld))*500
