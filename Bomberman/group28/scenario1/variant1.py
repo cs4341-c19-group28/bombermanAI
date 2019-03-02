@@ -8,7 +8,7 @@ from game import Game
 
 # TODO This is your code!
 sys.path.insert(1, '../groupNN')
-from expectimax_search2 import TestCharacter
+from testcharacter_astar5 import TestCharacter
 
 
 # Create the game

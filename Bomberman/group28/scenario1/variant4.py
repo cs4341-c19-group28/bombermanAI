@@ -10,7 +10,7 @@ from monsters.selfpreserving_monster import SelfPreservingMonster
 
 # TODO This is your code!
 sys.path.insert(1, '../groupNN')
-from testcharacter_astar5 import TestCharacter
+from expectimax_search4 import TestCharacter
 
 # Create the game
 random.seed() # TODO Change this if you want different random choices
