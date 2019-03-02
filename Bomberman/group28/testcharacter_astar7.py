@@ -253,7 +253,7 @@ class TestCharacter(CharacterEntity):
                     safe = self.look_for_empty_cell(graph)
                     closest_dist = 1000
                     for (x, y) in safe:
-                        dist = self.distance((x + self.x, y + self.y), mon_pos))
+                        dist = self.distance((x + self.x, y + self.y), mon_pos)
                         if dist < closest_dist:
                             closest_dist = dist
                             current_loc = (x + self.x, y + self.y)
