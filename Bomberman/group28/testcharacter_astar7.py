@@ -246,14 +246,14 @@ class TestCharacter(CharacterEntity):
                 else:
                     print("Avoid_mon2 has no valid solution; returning safe cell furthest from closest monster")
                     for r in range(self.monster_search_rad, 1, -1):
-                        if self.monseter_search(wrld, self.x, self.y, r):
-                            mon_pos = self.monseter_search_2(wrld, self.x, self.y, r)
+                        if self.monseter_search(graph, self.x, self.y, r):
+                            mon_pos = self.monseter_search_2(graph, self.x, self.y, r)
                             print("Monster at: ", mon_pos)
                     print("Closest monster at: ", mon_pos)
-                    safe = self.look_for_empty_cell(wrld)
+                    safe = self.look_for_empty_cell(graph)
                     closest_dist = 1000
                     for (x, y) in safe:
-                        dist = valid.put((x + self.x, y + self.y), self.distance(i, mon_pos))
+                        dist = self.distance((x + self.x, y + self.y), mon_pos))
                         if dist < closest_dist:
                             closest_dist = dist
                             current_loc = (x + self.x, y + self.y)
