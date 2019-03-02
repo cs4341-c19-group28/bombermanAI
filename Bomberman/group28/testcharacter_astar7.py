@@ -239,6 +239,25 @@ class TestCharacter(CharacterEntity):
             #print("Frontier")
 
             current_cost, current_loc = frontier.get()
+            if current_loc == (self.x, self.y):
+                if (not frontier.empty()):
+                    print("Avoid_mon2 returned itself; get next best option")
+                    current_cost, current_loc = frontier.get()
+                else:
+                    print("Avoid_mon2 has no valid solution; returning safe cell furthest from closest monster")
+                    for r in range(self.monster_search_rad, 1, -1):
+                        if self.monseter_search(wrld, self.x, self.y, r):
+                            mon_pos = self.monseter_search_2(wrld, self.x, self.y, r)
+                            print("Monster at: ", mon_pos)
+                    print("Closest monster at: ", mon_pos)
+                    safe = self.look_for_empty_cell(wrld)
+                    closest_dist = 1000
+                    for (x, y) in safe:
+                        dist = valid.put((x + self.x, y + self.y), self.distance(i, mon_pos))
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            current_loc = (x + self.x, y + self.y)
+            print("Going to: ", current_loc)
             return (current_loc)
         else:
             print("ERROR: No monster found")
@@ -262,25 +281,42 @@ class TestCharacter(CharacterEntity):
             m = next(iter(wrld.monsters.values()))
         except:
             return True
-        mon_neighbors = self.get_neighbors(wrld, m[0].x, m[0].y)
-        closest_dist = 1000
-        closest_loc = (m[0].x, m[0].y)
+        m_len = len(m)
+        mon_neighbors0 = self.get_neighbors(wrld, m[0].x, m[0].y)
+        if m_len == 2:
+            mon_neighbors1 = self.get_neighbors(wrld, m[1].x, m[1].y)
+        closest_dist0 = 1000
+        closest_loc0 = (m[0].x, m[0].y)
         for e in eventlist:
             if e == 3 or e == 2:
                 notdead = False
                 print("Character will die; event number ", e)
                 return False
-        for loc in mon_neighbors:
+        for loc in mon_neighbors0:
             try:
                 dist = self.distance((loc[0], loc[1]), (a.x, a.y))
-                if dist < closest_dist:
-                    closest_dist = dist
-                    closest_loc = loc
+                if dist < closest_dist0:
+                    closest_dist0 = dist
+                    closest_loc0 = loc
             except:
                 return False
-        mon_move_x = closest_loc[0] - m[0].x
-        mon_move_y = closest_loc[1] - m[0].y
-        m[0].move(mon_move_x, mon_move_y)
+        mon0_move_x = closest_loc0[0] - m[0].x
+        mon0_move_y = closest_loc0[1] - m[0].y
+        m[0].move(mon0_move_x, mon0_move_y)
+        if m_len >= 2:
+            closest_dist1 = 1000
+            closest_loc1 = (m[1].x, m[1].y)
+            for loc in mon_neighbors1:
+                try:
+                    dist = self.distance((loc[0], loc[1]), (a.x, a.y))
+                    if dist < closest_dist1:
+                        closest_dist1 = dist
+                    closest_loc1 = loc
+                except:
+                    return False
+            mon1_move_x = closest_loc1[0] - m[1].x
+            mon1_move_y = closest_loc1[0] - m[1].y
+            m[1].move(mon1_move_x, mon1_move_y)
         a.move(dx, dy)
         (newwrld, events) = wrld.next()
         print(a.x, a.y)
@@ -297,18 +333,39 @@ class TestCharacter(CharacterEntity):
     def avoid_mon3(self, wrld, depth=5):
         valid = PriorityQueue()
         neighbors = self.look_for_empty_cell(wrld)
+        for r in range(self.monster_search_rad, 1, -1):
+            if self.monseter_search(wrld, self.x, self.y, r):
+                mon_pos = self.monseter_search_2(wrld, self.x, self.y, r)
+                print("Monster at: ", mon_pos)
+        print("Closest monster at: ", mon_pos)
         for i in neighbors:
             if self.avoid_mon3_sensed(wrld, i[0], i[1], self, depth, []):
-                print(i, wrld.exitcell)
-                valid.put(i, self.distance(i, (wrld.exitcell)))
-        priority, location = valid.get()
-        new_x, new_y = location[0] + self.x, location[1] + self.y
-        return (new_x + location[0], new_y + location[1])
-        # if (not valid.empty()):
-        #     priority, location = valid.get()
-        #     return location
-        # else:
-        #     return self.avoid_mon2(wrld, 5)
+                # print(i, wrld.exitcell)
+                # valid.put(i, self.distance(i, (wrld.exitcell)))
+                print(i, mon_pos)
+                valid.put(i, self.distance(i, mon_pos))
+        # priority, location = valid.get()	# ERROR HERE WHEN THERE'S NOTHING IN THE QUEUE
+        if (not valid.empty()):
+            priority, location = valid.get()
+            if location[0] == 0 and location[1] == 0:
+                if (not valid.empty()):
+                    priority, location = valid.get()
+                else:
+                    print("Avoid_mon3 produced no valid results; doing avoid_mon2")
+                    return self.avoid_mon2(wrld, self.monster_search_rad)	# If there was nothing in the queue, default to previous avoid_mon code
+            new_x, new_y = location[0] + self.x, location[1] + self.y
+            # if new_x == self.x and new_y == self.y:
+            if location[0] == 0 and location[1] == 0:
+                print("Avoid_mon3 returning self.x, self.y; doing avoid_mon2")
+                return self.avoid_mon2(wrld, self.monster_search_rad) # If the location it ends up going towards is itself
+            else:
+                print("Doing avoid_mon3; going to x: ", new_x, ", y: ", new_y)
+                return (new_x, new_y)
+                # return (new_x + location[0], new_y + location[1])
+            # return location
+        else:
+            print("Avoid_mon3 produced no valid results; doing avoid_mon2")
+            return self.avoid_mon2(wrld, self.monster_search_rad)	# If there was nothing in the queue, default to previous avoid_mon code
 
     def monster_inrange(self, wrld):
         for i in range(-4, 5):
@@ -449,7 +506,7 @@ class TestCharacter(CharacterEntity):
                 break
 
         if ok:
-            tx, ty = step_list[1]
+            tx, ty = step_list[1]	# ERROR HERE IF STEP_LIST DOESN'T HAVE INDEX 1
 
             # Compute deltas
             dx = tx - self.x
@@ -494,7 +551,7 @@ class TestCharacter(CharacterEntity):
 
         self.last_loc = (self.x, self.y)
 
-        #last check never steip into bomb
+        #last check never step into bomb
         if jc_ABOMB:
             print("a bomb! ",dx,dy)
             if self.will_explode(self.x + dx, self.y + dy):  # never step into an explosionor (((self.x,self.y)==self.last_loc)and (dx!=0 or dy!=0))
